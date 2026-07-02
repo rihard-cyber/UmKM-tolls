@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   Link, Scissors, Sparkles, Loader2, CheckCircle2, AlertTriangle,
   MonitorPlay, Film, Target, TrendingUp, Play,
-  MessageSquare, Heart, Clock, Camera, Smartphone,
+  MessageSquare, Heart, Clock, Camera, Smartphone, X,
   Globe, BarChart3, Award, Zap, Brain, Download, DownloadCloud, UploadCloud
 } from 'lucide-react';
 import { TemplateIntelligence } from '../services/TemplateIntelligence';

@@ -92,19 +92,13 @@ async function processAITask(taskId, inputData = {}, config = {}) {
   try {
     const route = getRoute(taskId);
     
-    // Get current Supabase session token
-    const { data: { session } } = await supabase.auth.getSession();
-    const token = session?.access_token;
-    
-    if (!token) throw new Error("Anda harus login untuk menggunakan fitur AI.");
-
     const API_URL = import.meta.env.PROD ? '/api/ai/process' : 'http://localhost:5000/api/ai/process';
     
     const response = await fetch(API_URL, {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
+        // 'Authorization': `Bearer ${token}` // Disabled for prototype
       },
       body: JSON.stringify({ taskId, route, inputData, config })
     });

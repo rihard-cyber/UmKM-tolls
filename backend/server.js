@@ -49,8 +49,8 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'ClipperAI Backend is running!' });
 });
 
-// AI Processing Route (Protected)
-app.post('/api/ai/process', requireAuth, async (req, res) => {
+// AI Processing Route (Prototype: No Auth required)
+app.post('/api/ai/process', async (req, res) => {
   const { taskId, inputData, config, route } = req.body;
   
   console.log(`[AI Gateway] Processing taskId: ${taskId}`);
@@ -227,8 +227,8 @@ app.post('/api/ai/process', requireAuth, async (req, res) => {
   }
 });
 
-// Social Media Publish Route (Protected)
-app.post('/api/publish', requireAuth, async (req, res) => {
+// Social Media Publish Route (Prototype: No Auth required)
+app.post('/api/publish', async (req, res) => {
   const { caption, file, isScheduled, scheduledTime, platforms } = req.body;
   
   console.log(`[Publishing] Scheduling to ${platforms?.join(',')} for ${isScheduled ? scheduledTime : 'Now'}`);
