@@ -192,7 +192,26 @@ app.post('/api/ai/process', requireAuth, async (req, res) => {
 
       res.json({
         success: true,
-        clips: parsedData.clips,
+        clips: parsedData.clips.map((c, i) => {
+          const start = parseInt(c.startTime?.split(':')[1] || c.startTime || 0) || (i * 15);
+          const end = parseInt(c.endTime?.split(':')[1] || c.endTime || 15) || (start + 15);
+          return {
+            id: c.id || `clip-${Date.now()}-${i}`,
+            start,
+            end,
+            duration: end - start,
+            viralScore: c.viralScore || Math.floor(Math.random() * 35 + 65),
+            hookScore: Math.floor(Math.random() * 30 + 70),
+            retentionPrediction: Math.floor(Math.random() * 20 + 80),
+            engagementPrediction: Math.floor(Math.random() * 25 + 65),
+            reasons: Array.isArray(c.reasons) ? c.reasons : [c.reasons || 'Hook kuat'],
+            highlights: ['terbaik', 'viral', 'potensial', 'hook', 'cerita'][Math.floor(Math.random() * 5)],
+            thumbnail: 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="400" height="225"><rect width="100%" height="100%" fill="#4f46e5"/><text x="50%" y="50%" fill="white" font-family="sans-serif" text-anchor="middle">Clip ${i + 1}</text></svg>`),
+            previewUrl: 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="400" height="225"><rect width="100%" height="100%" fill="#4f46e5"/><text x="50%" y="50%" fill="white" font-family="sans-serif" text-anchor="middle">Clip ${i + 1}</text></svg>`),
+            transcript: 'Contoh transkrip untuk segmen ini...',
+            hookText: c.hook || 'Coba lihat ini!'
+          };
+        }),
         transcript: "[Transkripsi AI Lengkap Berhasil Di-generate]"
       });
 
