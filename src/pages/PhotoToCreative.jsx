@@ -377,7 +377,6 @@ export default function PhotoToCreative({ recordUsage, isPro, navigateTo }) {
               </div>
             </div>
           ) : null}
-      )}
 
       {lightboxImage && (
         <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-xl z-50 flex items-center justify-center p-4" onClick={() => setLightboxImage(null)}>

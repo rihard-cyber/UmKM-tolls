@@ -101,29 +101,32 @@ export default function SmartLinkToClip({ recordUsage, isPro, setShowPaymentModa
     setClips([]);
 
     try {
-      const response = await AIGateway.processAITask('video_analysis', {
-        url: videoUrl,
-        clipCount
-      });
-
-      if (response && response.clips) {
-        setClips(response.clips);
-        setSelectedClips(new Set(response.clips.slice(0, 5).map(c => c.id)));
-        setTranscript(response.transcript || '[Transkrip berhasil dibuat]');
-        
-        addGeneratedClips(response.clips);
-        
-        setResults({
-          totalClips: response.clips.length,
-          topScore: response.clips[0]?.viralScore || 0,
-          avgScore: Math.round(response.clips.reduce((s, c) => s + c.viralScore, 0) / response.clips.length),
-          estimatedViews: Math.floor(Math.random() * 500000) + 10000,
-          platforms: ['TikTok', 'Instagram Reels', 'YouTube Shorts']
+      try {
+        const response = await AIGateway.processAITask('video_analysis', {
+          url: videoUrl,
+          clipCount
         });
-        setProcessing('done');
+
+        if (response && response.clips) {
+          setClips(response.clips);
+          setSelectedClips(new Set(response.clips.slice(0, 5).map(c => c.id)));
+          setTranscript(response.transcript || '[Transkrip berhasil dibuat]');
+          addGeneratedClips(response.clips);
+          
+          setResults({
+            totalClips: response.clips.length,
+            topScore: response.clips[0]?.viralScore || 0,
+            avgScore: Math.round(response.clips.reduce((s, c) => s + c.viralScore, 0) / response.clips.length),
+            estimatedViews: Math.floor(Math.random() * 500000) + 10000,
+            platforms: ['TikTok', 'Instagram Reels', 'YouTube Shorts']
+          });
+          setProcessing('done');
+          return;
+        }
+      } catch (err) {
+        console.warn("Backend video analysis failed, using fallback mock", err);
       }
-    } catch (err) {
-      console.warn("Backend video analysis failed, using fallback mock", err);
+
       const mockDuration = Math.floor(Math.random() * 3600) + 600;
       const generatedClips = generateMockClips(mockDuration, clipCount);
       setClips(generatedClips);
