@@ -169,6 +169,13 @@ app.post('/api/ai/process', async (req, res) => {
       // Mocked deep video analysis via LLM JSON generation
       const { url, clipCount } = inputData;
       
+      let youtubeId = null;
+      if (url) {
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+        const match = url.match(regExp);
+        if (match && match[2].length === 11) youtubeId = match[2];
+      }
+      
       const prompt = `Anda adalah seorang ahli pemotongan video (Video Editor) spesialis TikTok dan Reels. 
         Tugas Anda adalah membuat struktur data JSON berisi ${clipCount || 5} potongan (clip) paling viral dari sebuah video panjang fiktif.
         Kembalikan format JSON murni:
@@ -206,8 +213,8 @@ app.post('/api/ai/process', async (req, res) => {
             engagementPrediction: Math.floor(Math.random() * 25 + 65),
             reasons: Array.isArray(c.reasons) ? c.reasons : [c.reasons || 'Hook kuat'],
             highlights: ['terbaik', 'viral', 'potensial', 'hook', 'cerita'][Math.floor(Math.random() * 5)],
-            thumbnail: 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="400" height="225"><rect width="100%" height="100%" fill="#4f46e5"/><text x="50%" y="50%" fill="white" font-family="sans-serif" text-anchor="middle">Clip ${i + 1}</text></svg>`),
-            previewUrl: 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="400" height="225"><rect width="100%" height="100%" fill="#4f46e5"/><text x="50%" y="50%" fill="white" font-family="sans-serif" text-anchor="middle">Clip ${i + 1}</text></svg>`),
+            thumbnail: youtubeId ? `https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg` : 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="400" height="225"><rect width="100%" height="100%" fill="#4f46e5"/><text x="50%" y="50%" fill="white" font-family="sans-serif" text-anchor="middle">Clip ${i + 1}</text></svg>`),
+            previewUrl: youtubeId ? `youtube:${youtubeId}` : 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="400" height="225"><rect width="100%" height="100%" fill="#4f46e5"/><text x="50%" y="50%" fill="white" font-family="sans-serif" text-anchor="middle">Clip ${i + 1}</text></svg>`),
             transcript: 'Contoh transkrip untuk segmen ini...',
             hookText: c.hook || 'Coba lihat ini!'
           };

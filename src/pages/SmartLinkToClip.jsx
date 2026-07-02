@@ -412,7 +412,9 @@ export default function SmartLinkToClip({ recordUsage, isPro, setShowPaymentModa
               className={`group rounded-2xl border-2 cursor-pointer transition-all overflow-hidden ${selectedClips.has(clip.id) ? 'border-indigo-500 shadow-lg shadow-indigo-500/10' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'}`}
             >
               <div className="relative aspect-video bg-slate-100 dark:bg-slate-800 overflow-hidden" onClick={() => setPreviewClip(clip)}>
-                {clip.previewUrl ? (
+                {clip.previewUrl?.startsWith('youtube:') ? (
+                  <img src={`https://img.youtube.com/vi/${clip.previewUrl.split(':')[1]}/maxresdefault.jpg`} alt={`Clip ${idx + 1}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                ) : clip.previewUrl ? (
                   <img src={clip.previewUrl} alt={`Clip ${idx + 1}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-500/20 to-purple-500/20">
@@ -469,7 +471,16 @@ export default function SmartLinkToClip({ recordUsage, isPro, setShowPaymentModa
         <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setPreviewClip(null)}>
           <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl" onClick={e => e.stopPropagation()}>
             <div className="relative aspect-video bg-slate-100 dark:bg-slate-800 rounded-t-3xl overflow-hidden">
-              {previewClip.previewUrl ? (
+              {previewClip.previewUrl?.startsWith('youtube:') ? (
+                <iframe 
+                  width="100%" 
+                  height="100%" 
+                  src={`https://www.youtube.com/embed/${previewClip.previewUrl.split(':')[1]}?start=${previewClip.start}&end=${previewClip.end}&autoplay=1`} 
+                  frameBorder="0" 
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                  allowFullScreen
+                ></iframe>
+              ) : previewClip.previewUrl ? (
                 <img src={previewClip.previewUrl} alt="Preview" className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-500/30 to-purple-500/30">
