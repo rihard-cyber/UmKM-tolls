@@ -98,7 +98,9 @@ async function processAITask(taskId, inputData = {}, config = {}) {
     
     if (!token) throw new Error("Anda harus login untuk menggunakan fitur AI.");
 
-    const response = await fetch('http://localhost:5000/api/ai/process', {
+    const API_URL = import.meta.env.PROD ? '/api/ai/process' : 'http://localhost:5000/api/ai/process';
+    
+    const response = await fetch(API_URL, {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',

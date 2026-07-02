@@ -1,6 +1,6 @@
 import { supabase } from './supabase';
 
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = import.meta.env.PROD ? '/api' : 'http://localhost:5000/api';
 
 export const PLATFORMS = [
   { id: 'youtube', name: 'YouTube', icon: 'youtube', color: '#FF0000', maxDuration: null, formats: ['16:9'] },
