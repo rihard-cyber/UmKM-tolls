@@ -12,17 +12,17 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Initialize Supabase Client (Admin / Service Role for verification)
-const supabaseUrl = process.env.SUPABASE_URL || '';
-const supabaseKey = process.env.SUPABASE_ANON_KEY || '';
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_ANON_KEY;
+const supabase = (supabaseUrl && supabaseKey) ? createClient(supabaseUrl, supabaseKey) : null;
 
 // Initialize AI Clients
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || '' });
-const groq = new OpenAI({ 
-  apiKey: process.env.GROQ_API_KEY || '', 
+const genAI = process.env.GEMINI_API_KEY ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY) : null;
+const openai = process.env.OPENAI_API_KEY ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY }) : null;
+const groq = process.env.GROQ_API_KEY ? new OpenAI({ 
+  apiKey: process.env.GROQ_API_KEY, 
   baseURL: 'https://api.groq.com/openai/v1' 
-});
+}) : null;
 
 // Middleware
 app.use(cors());
@@ -57,7 +57,7 @@ app.post('/api/ai/process', async (req, res) => {
 
   try {
     if (taskId === 'caption_premium') {
-      if (!process.env.GEMINI_API_KEY) {
+      if (!genAI) {
         throw new Error("GEMINI_API_KEY is not set in backend/.env");
       }
 
@@ -95,14 +95,14 @@ app.post('/api/ai/process', async (req, res) => {
 
       console.log(`Sending prompt to ${selectedProvider}...`);
 
-      if (selectedProvider === 'openSource' && process.env.GROQ_API_KEY) {
+      if (selectedProvider === 'openSource' && groq) {
         const completion = await groq.chat.completions.create({
           messages: [{ role: "user", content: prompt }],
           model: "llama-3.1-70b-versatile",
           temperature: 0.7,
         });
         responseText = completion.choices[0].message.content;
-      } else if (selectedProvider === 'premium' && process.env.OPENAI_API_KEY) {
+      } else if (selectedProvider === 'premium' && openai) {
         const completion = await openai.chat.completions.create({
           messages: [{ role: "user", content: prompt }],
           model: "gpt-4o-mini", 
@@ -110,7 +110,7 @@ app.post('/api/ai/process', async (req, res) => {
         });
         responseText = completion.choices[0].message.content;
       } else {
-        if (!process.env.GEMINI_API_KEY) throw new Error("No AI Provider API Keys available.");
+        if (!genAI) throw new Error("No AI Provider API Keys available.");
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
         const result = await model.generateContent(prompt);
         responseText = result.response.text();
@@ -127,7 +127,7 @@ app.post('/api/ai/process', async (req, res) => {
       let imageUrls = [];
 
       try {
-        if (process.env.OPENAI_API_KEY) {
+        if (openai) {
           console.log('Sending DALL-E 3 prompt...');
           const enhancedPrompt = `Gaya: ${style}. ${prompt}`;
           
@@ -192,10 +192,25 @@ app.post('/api/ai/process', async (req, res) => {
           ]
         }`;
 
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-      const result = await model.generateContent(prompt);
-      const cleanedJSON = result.response.text().replace(/```json/g, '').replace(/```/g, '').trim();
-      const parsedData = JSON.parse(cleanedJSON);
+      let parsedData;
+      if (genAI) {
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const result = await model.generateContent(prompt);
+        const cleanedJSON = result.response.text().replace(/```json/g, '').replace(/```/g, '').trim();
+        parsedData = JSON.parse(cleanedJSON);
+      } else {
+        // Mock fallback if AI is not available
+        parsedData = {
+          clips: Array.from({length: clipCount || 5}).map((_, i) => ({
+            id: `mock-${i}`,
+            startTime: `00:${(i * 15).toString().padStart(2, '0')}`,
+            endTime: `00:${((i + 1) * 15).toString().padStart(2, '0')}`,
+            viralScore: 80 + i,
+            reasons: ["Mock data (API Key not set)"],
+            hook: "Mock Hook"
+          }))
+        };
+      }
 
       res.json({
         success: true,
